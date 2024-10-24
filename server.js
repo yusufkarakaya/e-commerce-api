@@ -9,7 +9,6 @@ const corsOptions = require('./config/corsOptions')
 const cors = require('cors')
 const connectDB = require('./config/dbConn')
 const mongoose = require('mongoose')
-const upload = require('./middleware/upload.js')
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
@@ -31,8 +30,6 @@ app.use('/category', require('./routes/categoryRoutes.js'))
 app.use('/orders', require('./routes/orderRoutes.js'))
 app.use('/cart', require('./routes/cartRoutes.js'))
 app.use('/auth', require('./routes/authRoutes.js'))
-
-// Serve the index.html file for any other routes (client-side routing support)
 
 app.all('*', (req, res) => {
   res.status(404)
