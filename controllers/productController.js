@@ -1,9 +1,11 @@
 const Product = require('../models/Product')
 const Category = require('../models/Category')
+const mongoose = require('mongoose')
+const { ObjectId } = mongoose.Types
+const fs = require('fs')
 
 const getAllProducts = async (req, res) => {
   try {
-    // Use populate to fetch the category name
     const products = await Product.find().populate('category', 'name').exec()
 
     if (!products.length) {
@@ -34,30 +36,22 @@ const getProductById = async (req, res) => {
 }
 
 const createProduct = async (req, res) => {
-  const {
-    name,
-    price,
-    description,
-    stock,
-    category: categoryName,
-    imageUrl,
-  } = req.body
+  const { name, price, description, stock, category: categoryId } = req.body
 
-  // Improved validation
+  const imageUrl = req.file ? req.file.path : null
+
   if (
     !name ||
-    typeof price !== 'number' ||
+    isNaN(Number(price)) ||
     !description ||
-    typeof stock !== 'number' ||
-    !categoryName || // we're looking for a category by name
+    isNaN(Number(stock)) ||
+    !categoryId ||
     !imageUrl
   ) {
     return res
       .status(400)
       .json({ error: 'Please provide valid data for all required fields' })
   }
-
-  // Check if a product with the same name already exists
   const duplicate = await Product.findOne({ name }).lean().exec()
   if (duplicate) {
     return res
@@ -66,20 +60,17 @@ const createProduct = async (req, res) => {
   }
 
   try {
-    // Check if the category exists
-    let category = await Category.findOne({ name: categoryName }).exec()
+    let category = await Category.findById(categoryId).exec()
 
     if (!category) {
       return res.status(400).json({ error: 'Category not found' })
     }
-
-    // Now create the product with the category's ID
     const product = await Product.create({
       name,
       price,
       description,
       stock,
-      category: category._id, // store the category's ObjectId
+      category: category._id,
       imageUrl,
     })
 
@@ -90,29 +81,42 @@ const createProduct = async (req, res) => {
 }
 
 const updateProduct = async (req, res) => {
-  const { name, price, description, stock, category, imageUrl } = req.body
+  let { name, price, description, stock, category } = req.body
 
-  if (
-    !name ||
-    typeof price !== 'number' ||
-    !description ||
-    typeof stock !== 'number' ||
-    !category ||
-    !imageUrl
-  ) {
-    return res
-      .status(400)
-      .json({ error: 'Please provide valid data for all required fields' })
-  }
+  // Convert `price` and `stock` to numbers
+  price = parseFloat(price)
+  stock = parseInt(stock)
 
   try {
+    if (!ObjectId.isValid(category)) {
+      return res.status(400).json({ error: 'Invalid category ID' })
+    }
+
+    const updatedData = {
+      name,
+      price,
+      description,
+      stock,
+      category,
+    }
+
+    if (req.file) {
+      updatedData.imageUrl = req.file.path // Assuming you're storing the image path in `imageUrl`
+    }
+
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { name, price, description, stock, category, imageUrl },
+      updatedData,
       { new: true }
     )
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' })
+    }
+
     res.status(200).json(product)
   } catch (error) {
+    console.error('Error while updating product:', error)
     res.status(500).json({ error: 'Invalid product data received' })
   }
 }
@@ -128,6 +132,17 @@ const deleteProduct = async (req, res) => {
     const product = await Product.findById(id)
     if (!product) {
       return res.status(404).json({ error: 'Product not found' })
+    }
+
+    if (product.imageUrl) {
+      fs.unlinkSync(product.imageUrl),
+        (err) => {
+          if (err) {
+            console.error('Error while deleting product image:', err)
+          } else {
+            console.log('Product image deleted successfully')
+          }
+        }
     }
 
     await product.deleteOne()

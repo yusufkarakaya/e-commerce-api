@@ -9,6 +9,9 @@ const corsOptions = require('./config/corsOptions')
 const cors = require('cors')
 const connectDB = require('./config/dbConn')
 const mongoose = require('mongoose')
+const upload = require('./middleware/upload.js')
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 const PORT = process.env.PORT || 3500
 
@@ -27,9 +30,9 @@ app.use('/products', require('./routes/productRoutes.js'))
 app.use('/category', require('./routes/categoryRoutes.js'))
 app.use('/orders', require('./routes/orderRoutes.js'))
 app.use('/cart', require('./routes/cartRoutes.js'))
+app.use('/auth', require('./routes/authRoutes.js'))
 
 app.all('*', (req, res) => {
-  console.log('Page not found for path:', req.originalUrl)
   res.status(404)
   if (req.accepts('html')) {
     res.sendFile(path.join(__dirname, 'views', '404.html'))
