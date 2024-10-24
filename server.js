@@ -32,6 +32,11 @@ app.use('/orders', require('./routes/orderRoutes.js'))
 app.use('/cart', require('./routes/cartRoutes.js'))
 app.use('/auth', require('./routes/authRoutes.js'))
 
+// Serve the index.html file for any other routes (client-side routing support)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'))
+})
+
 app.all('*', (req, res) => {
   res.status(404)
   if (req.accepts('html')) {
