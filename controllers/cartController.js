@@ -4,9 +4,8 @@ const Product = require('../models/Product')
 const mongoose = require('mongoose')
 
 const getUserCart = async (req, res) => {
-  const userId = req.user
-
   try {
+    const userId = req.user
     if (!userId) {
       return res.status(403).json({ message: 'Unauthorized' })
     }

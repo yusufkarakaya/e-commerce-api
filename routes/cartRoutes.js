@@ -3,8 +3,8 @@ const router = express.Router()
 const cartController = require('../controllers/cartController')
 const verifyJWT = require('../middleware/verifyJWT')
 
-router.route('/add').post(verifyJWT, cartController.addProductToCart)
 router.route('/').get(verifyJWT, cartController.getUserCart)
+router.route('/add').post(verifyJWT, cartController.addProductToCart)
 
 router
   .route('/:id')
