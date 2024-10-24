@@ -34,7 +34,7 @@ app.use('/auth', require('./routes/authRoutes.js'))
 
 // Serve the index.html file for any other routes (client-side routing support)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'))
+  res.sendFile(path.join(__dirname, 'public/index.html'))
 })
 
 app.all('*', (req, res) => {
