@@ -1,1 +1,2 @@
-# e-commerce-api
+# E-Commerce Backend
+# mern-ecommerce-api
