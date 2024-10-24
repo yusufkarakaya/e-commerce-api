@@ -3,18 +3,14 @@ const User = require('../models/User')
 const Product = require('../models/Product')
 const mongoose = require('mongoose')
 
-// @desc    Get all carts
-// @route   GET /cart
-// @access  Private
 const getUserCart = async (req, res) => {
-  const userId = req.user // Bu, verifyJWT middleware'inden gelen kullanıcı ID'si
+  const userId = req.user
 
   try {
     if (!userId) {
       return res.status(403).json({ message: 'Unauthorized' })
     }
 
-    // Kullanıcıya ait olan cart'ı bul
     const cart = await Cart.findOne({ user: userId })
       .populate('user', 'username')
       .populate({
@@ -34,9 +30,6 @@ const getUserCart = async (req, res) => {
   }
 }
 
-// @desc    Get cart by ID
-// @route   GET /cart/:id
-// @access  Private
 const getCartById = async (req, res) => {
   const { id } = req.params
   const user = req.user
@@ -69,9 +62,6 @@ const getCartById = async (req, res) => {
   }
 }
 
-// @desc    Create a new cart
-// @route   POST /cart
-// @access  Private
 const addProductToCart = async (req, res) => {
   const { product, quantity } = req.body
   const userId = req.user
@@ -134,9 +124,6 @@ const addProductToCart = async (req, res) => {
   }
 }
 
-// @desc    Update cart by ID
-// @route   PATCH /cart/:id
-// @access  Private
 const updateCart = async (req, res) => {
   const { id } = req.params
   const { user, products } = req.body
@@ -205,9 +192,6 @@ const updateCart = async (req, res) => {
   }
 }
 
-// @desc    Delete cart by ID
-// @route   DELETE /cart/:id
-// @access  Private
 const removeProductFromCart = async (req, res) => {
   const userId = req.user
   const { productId } = req.params
@@ -311,7 +295,6 @@ const decreaseProductQuantity = async (req, res) => {
       return res.status(404).json({ message: 'Product not found in cart' })
     }
 
-    // Save updated cart
     await cart.save()
 
     return res

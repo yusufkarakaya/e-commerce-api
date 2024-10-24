@@ -3,6 +3,7 @@ const Category = require('../models/Category')
 const mongoose = require('mongoose')
 const { ObjectId } = mongoose.Types
 const fs = require('fs')
+const cloudinary = require('cloudinary').v2
 
 const getAllProducts = async (req, res) => {
   try {
@@ -135,14 +136,17 @@ const deleteProduct = async (req, res) => {
     }
 
     if (product.imageUrl) {
-      fs.unlinkSync(product.imageUrl),
-        (err) => {
-          if (err) {
-            console.error('Error while deleting product image:', err)
+      const publicId = product.imageUrl.split('/').pop().split('.')[0]
+      await cloudinary.uploader.destroy(
+        `ecommerce/${publicId}`,
+        (error, result) => {
+          if (error) {
+            console.error('Error while deleting product image:', error)
           } else {
-            console.log('Product image deleted successfully')
+            console.log('Product image deleted successfully', result)
           }
         }
+      )
     }
 
     await product.deleteOne()
