@@ -22,4 +22,6 @@ router
   .route('/product/:productId/decrease')
   .post(verifyJWT, cartController.decreaseProductQuantity)
 
+router.post('/clearCart', verifyJWT, cartController.clearCart)
+
 module.exports = router

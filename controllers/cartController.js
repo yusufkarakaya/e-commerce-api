@@ -304,6 +304,35 @@ const decreaseProductQuantity = async (req, res) => {
   }
 }
 
+const clearCart = async (req, res) => {
+  const userId = req.user // Kullanıcı kimliğini alıyoruz
+
+  console.log('User ID:', userId)
+
+  if (!userId) {
+    return res.status(403).json({ message: 'Unauthorized' })
+  }
+
+  try {
+    const updatedCart = await Cart.findOneAndUpdate(
+      { user: userId },
+      { $set: { products: [], totalPrice: 0 } },
+      { new: true }
+    )
+
+    if (!updatedCart) {
+      return res.status(404).json({ message: 'Cart not found' })
+    }
+
+    return res
+      .status(200)
+      .json({ message: 'Cart cleared successfully', updatedCart })
+  } catch (error) {
+    console.error('Error clearing cart:', error)
+    return res.status(500).json({ error: 'Failed to clear cart' })
+  }
+}
+
 module.exports = {
   getUserCart,
   getCartById,
@@ -312,4 +341,5 @@ module.exports = {
   removeProductFromCart,
   decreaseProductQuantity,
   increaseProductQuantity,
+  clearCart,
 }
