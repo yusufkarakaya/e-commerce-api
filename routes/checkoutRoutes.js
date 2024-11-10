@@ -28,9 +28,9 @@ router.post('/create-checkout-session', async (req, res) => {
       success_url: `${process.env.CLIENT_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/checkout/cancel`,
       shipping_address_collection: {
-        allowed_countries: ['US', 'CA'], // İzin verilen ülkeleri belirtin
+        allowed_countries: ['US', 'CA'],
       },
-      billing_address_collection: 'required', // Kullanıcıdan fatura adresi isteyin
+      billing_address_collection: 'required',
     })
 
     res.status(200).json({ url: session.url })

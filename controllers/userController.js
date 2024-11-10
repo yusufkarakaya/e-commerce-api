@@ -1,6 +1,8 @@
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const { sendVerificationEmail } = require('../services/emailService')
+const crypto = require('crypto')
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body
@@ -26,6 +28,7 @@ const loginUser = async (req, res) => {
         userId: user._id,
         username: user.username,
         role: user.role,
+        isVerified: user.isVerified,
       },
       process.env.JWT_SECRET,
       {
@@ -39,6 +42,7 @@ const loginUser = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
+        isVerified: user.isVerified,
       },
       message: 'Login successful',
     })
@@ -83,26 +87,58 @@ const createUser = async (req, res) => {
       return res.status(400).json({ message: 'Please provide all fields' })
     }
 
-    // Kullanıcı var mı diye kontrol et
     const existingUser = await User.findOne({ email }).lean().exec()
     if (existingUser) {
       return res.status(409).json({ message: 'User already exists' })
     }
 
-    // Yeni kullanıcı oluştur
     const hashedPassword = await bcrypt.hash(password, 10)
+
+    const verificationCode = crypto.randomBytes(3).toString('hex')
+
     const user = await User.create({
       username,
       email,
       password: hashedPassword,
+      verificationCode,
+      isVerified: false,
     })
+
+    await sendVerificationEmail(email, verificationCode)
 
     return res.status(201).json({ message: 'User created successfully', user })
   } catch (error) {
-    console.error('Error occurred:', error) // Hata detayını logla
+    console.error('Error occurred:', error)
     return res
       .status(500)
       .json({ message: 'Internal Server Error', error: error.message })
+  }
+}
+
+const verifyUser = async (req, res) => {
+  const { email, code } = req.body
+
+  try {
+    const user = await User.findOne({ email }).exec()
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User is already verified' })
+    }
+
+    if (user.verificationCode === code) {
+      user.isVerified = true
+      user.verificationCode = undefined
+      await user.save()
+      return res.status(200).json({ message: 'Email verified successfully' })
+    } else {
+      return res.status(400).json({ message: 'Invalid verification code' })
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message })
   }
 }
 
@@ -110,7 +146,6 @@ const updateUser = async (req, res) => {
   const { id } = req.params
   const { username, email, password } = req.body
 
-  //confirm data
   if (!username || !email) {
     return res
       .status(400)
@@ -159,4 +194,5 @@ module.exports = {
   updateUser,
   deleteUser,
   loginUser,
+  verifyUser,
 }

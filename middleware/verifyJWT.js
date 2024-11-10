@@ -11,7 +11,7 @@ const verifyJWT = (req, res, next) => {
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(403).json({ message: 'Forbidden' })
 
-    req.user = decoded.userId // Attach the user ID from the JWT to req.user
+    req.user = decoded.userId
     next()
   })
 }
