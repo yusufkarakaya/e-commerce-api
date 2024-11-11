@@ -43,20 +43,17 @@ const getOrderById = async (req, res) => {
 const createOrder = async (req, res) => {
   const { user, products, status } = req.body
 
-  // Validation
   if (!user || !products || !products.length) {
     return res
       .status(400)
       .json({ error: 'Please provide valid data for all required fields' })
   }
 
-  // Check if the user exists
   const userExists = await User.findById(user).exec()
   if (!userExists) {
     return res.status(404).json({ error: 'User not found' })
   }
 
-  // Extract product IDs and check if products exist
   const productIds = products.map((item) => item.product)
   const productsExist = await Product.find({ _id: { $in: productIds } }).exec()
 
@@ -64,7 +61,6 @@ const createOrder = async (req, res) => {
     return res.status(404).json({ error: 'Products not found' })
   }
 
-  // Calculate total price based on product prices and quantities
   let totalPrice = products.reduce((acc, item) => {
     const product = productsExist.find((p) => p._id.toString() === item.product)
     return acc + product.price * item.quantity
@@ -72,11 +68,10 @@ const createOrder = async (req, res) => {
 
   totalPrice = Number(totalPrice.toFixed(2))
 
-  // Create a new order
   const newOrder = new Order({
     user,
     products: products.map((item) => ({
-      product: item.product, // Here product is the ObjectId
+      product: item.product,
       quantity: item.quantity,
     })),
     totalPrice,
@@ -102,13 +97,11 @@ const updateOrder = async (req, res) => {
       .json({ error: 'Please provide valid data for all required fields' })
   }
 
-  // Check if the user exists
   const userExists = await User.findById(user).exec()
   if (!userExists) {
     return res.status(404).json({ error: 'User not found' })
   }
 
-  // Extract product IDs and check if products exist
   const productIds = products.map((item) => item.product)
   const productsExists = await Product.find({ _id: { $in: productIds } }).exec()
 
@@ -116,7 +109,6 @@ const updateOrder = async (req, res) => {
     return res.status(404).json({ error: 'Products not found' })
   }
 
-  // Calculate total price based on product prices and quantities
   let totalPrice = products.reduce((acc, item) => {
     const product = productsExists.find(
       (product) => product._id.toString() === item.product
@@ -126,7 +118,6 @@ const updateOrder = async (req, res) => {
 
   totalPrice = Number(totalPrice.toFixed(2))
 
-  // Update the order
   try {
     const order = await Order.findByIdAndUpdate(
       id,

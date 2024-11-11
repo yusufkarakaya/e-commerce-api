@@ -7,7 +7,7 @@ const errorHandler = (err, req, res, next) => {
   )
   console.log(err.stack)
 
-  const status = res.statusCode ? res.statusCode : 500 // server error
+  const status = res.statusCode ? res.statusCode : 500
 
   res.status(status)
 

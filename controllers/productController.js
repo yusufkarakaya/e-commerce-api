@@ -2,7 +2,6 @@ const Product = require('../models/Product')
 const Category = require('../models/Category')
 const mongoose = require('mongoose')
 const { ObjectId } = mongoose.Types
-const fs = require('fs')
 const cloudinary = require('cloudinary').v2
 
 const getAllProducts = async (req, res) => {

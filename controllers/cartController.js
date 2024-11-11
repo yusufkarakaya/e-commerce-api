@@ -305,7 +305,7 @@ const decreaseProductQuantity = async (req, res) => {
 }
 
 const clearCart = async (req, res) => {
-  const userId = req.user // Kullanıcı kimliğini alıyoruz
+  const userId = req.user
 
   console.log('User ID:', userId)
 
