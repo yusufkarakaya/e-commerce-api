@@ -6,7 +6,7 @@ const upload = require('../middleware/upload')
 router
   .route('/')
   .get(productController.getAllProducts)
-  .post(upload.single('imageUrl'), productController.createProduct)
+  .post(upload.array('images', 10), productController.createProduct)
 
 router
   .route('/:id')

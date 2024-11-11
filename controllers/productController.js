@@ -39,7 +39,7 @@ const getProductById = async (req, res) => {
 const createProduct = async (req, res) => {
   const { name, price, description, stock, category: categoryId } = req.body
 
-  const imageUrl = req.file ? req.file.path : null
+  const images = req.files ? req.files.map((file) => file.path) : []
 
   if (
     !name ||
@@ -47,7 +47,7 @@ const createProduct = async (req, res) => {
     !description ||
     isNaN(Number(stock)) ||
     !categoryId ||
-    !imageUrl
+    images.length === 0
   ) {
     return res
       .status(400)
@@ -72,7 +72,7 @@ const createProduct = async (req, res) => {
       description,
       stock,
       category: category._id,
-      imageUrl,
+      images,
     })
 
     return res.status(201).json(product)
