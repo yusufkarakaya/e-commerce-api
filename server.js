@@ -32,8 +32,12 @@ app.use('/api/cart', require('./routes/cartRoutes.js'))
 app.use('/api/auth', require('./routes/authRoutes.js'))
 app.use('/api/checkout', require('./routes/checkoutRoutes.js'))
 
+// app.get('*', (req, res) => {
+//   res.sendFile(path.resolve(__dirname, 'public', 'index.html'))
+
+// })
 app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'public', 'index.html'))
+  res.redirect('/')
 })
 
 app.all('*', (req, res) => {
