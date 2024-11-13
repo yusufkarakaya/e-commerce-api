@@ -22,8 +22,8 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors(corsOptions))
 
-// app.use('/', express.static(path.join(__dirname, 'public')))
-// app.use('/', require('./routes/root.js'))
+app.use('/', express.static(path.join(__dirname, 'public')))
+app.use('/', require('./routes/root.js'))
 app.use('/api/users', require('./routes/userRoutes.js'))
 app.use('/api/products', require('./routes/productRoutes.js'))
 app.use('/api/category', require('./routes/categoryRoutes.js'))
@@ -40,16 +40,16 @@ app.get('*', (req, res) => {
   }
 })
 
-// app.all('*', (req, res) => {
-//   res.status(404)
-//   if (req.accepts('html')) {
-//     res.sendFile(path.join(__dirname, 'views', '404.html'))
-//   } else if (req.accepts('json')) {
-//     res.json({ error: 'Not Found' })
-//   } else {
-//     res.type('txt').send('Not Found')
-//   }
-// })
+app.all('*', (req, res) => {
+  res.status(404)
+  if (req.accepts('html')) {
+    res.sendFile(path.join(__dirname, 'views', '404.html'))
+  } else if (req.accepts('json')) {
+    res.json({ error: 'Not Found' })
+  } else {
+    res.type('txt').send('Not Found')
+  }
+})
 
 app.use(errorHandler)
 
