@@ -14,7 +14,7 @@ const getUserCart = async (req, res) => {
       .populate('user', 'username')
       .populate({
         path: 'products.product',
-        select: 'name price imageUrl description stock',
+        select: 'name price images description stock',
       })
       .lean()
       .exec()
