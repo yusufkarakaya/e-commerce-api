@@ -23,6 +23,7 @@ app.use(cookieParser())
 app.use(cors(corsOptions))
 
 app.use('/', express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, 'views')))
 app.use('/', require('./routes/root.js'))
 app.use('/api/users', require('./routes/userRoutes.js'))
 app.use('/api/products', require('./routes/productRoutes.js'))
