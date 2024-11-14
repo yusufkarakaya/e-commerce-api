@@ -3,7 +3,7 @@ const router = express.Router()
 const cartController = require('../controllers/cartController')
 const verifyJWT = require('../middleware/verifyJWT')
 
-router.route('/').get(verifyJWT, cartController.getUserCart)
+router.route('/').get(cartController.getUserCart)
 router.route('/add').post(verifyJWT, cartController.addProductToCart)
 
 router
