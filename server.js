@@ -32,14 +32,12 @@ app.use('/api/cart', require('./routes/cartRoutes.js'))
 app.use('/api/auth', require('./routes/authRoutes.js'))
 app.use('/api/checkout', require('./routes/checkoutRoutes.js'))
 
+// Eğer başka bir rota bulunamazsa index.html dosyasını gönder
 app.get('*', (req, res) => {
-  if (req.path !== '/') {
-    res.redirect('/')
-  } else {
-    res.sendFile(path.resolve(__dirname, 'public', 'index.html'))
-  }
+  res.sendFile(path.resolve(__dirname, 'views', 'index.html'))
 })
 
+// 404 Hatası Yönetimi
 app.all('*', (req, res) => {
   res.status(404)
   if (req.accepts('html')) {
