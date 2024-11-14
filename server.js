@@ -22,8 +22,11 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors(corsOptions))
 
+// Static dosyalar
 app.use('/', express.static(path.join(__dirname, 'public')))
 app.use(express.static(path.join(__dirname, 'views')))
+
+// API rotaları
 app.use('/', require('./routes/root.js'))
 app.use('/api/users', require('./routes/userRoutes.js'))
 app.use('/api/products', require('./routes/productRoutes.js'))
@@ -33,23 +36,23 @@ app.use('/api/cart', require('./routes/cartRoutes.js'))
 app.use('/api/auth', require('./routes/authRoutes.js'))
 app.use('/api/checkout', require('./routes/checkoutRoutes.js'))
 
+if (process.env.NODE_ENV === 'production') {
+  // Frontend build klasörünü statik olarak serve et
+  app.use(express.static(path.join(__dirname, '../ecommerce-frontend/dist')))
+
+  // Tüm GET isteklerini frontend'e yönlendir
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../ecommerce-frontend/dist/index.html'))
+  })
+}
+
 // Eğer başka bir rota bulunamazsa index.html dosyasını gönder
+// Bu, React Router tarafından client-side routing için kullanılır
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'views', 'index.html'))
 })
 
-// 404 Hatası Yönetimi
-app.all('*', (req, res) => {
-  res.status(404)
-  if (req.accepts('html')) {
-    res.sendFile(path.join(__dirname, 'views', '404.html'))
-  } else if (req.accepts('json')) {
-    res.json({ error: 'Not Found' })
-  } else {
-    res.type('txt').send('Not Found')
-  }
-})
-
+// Hata yönetimi middleware'i
 app.use(errorHandler)
 
 mongoose.connection.once('open', () => {
