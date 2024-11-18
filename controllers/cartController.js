@@ -81,24 +81,19 @@ const addProductToCart = async (req, res) => {
       return res.status(404).json({ message: 'Product not found.' })
     }
 
-    // Check if the user's cart already exists
     let cart = await Cart.findOne({ user: userId })
 
     if (cart) {
-      // If the cart exists, check if the product is already in the cart
       const productIndex = cart.products.findIndex(
         (item) => item.product.toString() === product
       )
 
       if (productIndex > -1) {
-        // If product exists in cart, update the quantity
         cart.products[productIndex].quantity += quantity
       } else {
-        // If product does not exist, add it to the cart
         cart.products.push({ product: product, quantity })
       }
     } else {
-      // If no cart exists for this user, create a new one
       cart = await Cart.create({
         user: userId,
         products: [{ product: product, quantity }],
@@ -106,7 +101,6 @@ const addProductToCart = async (req, res) => {
       })
     }
 
-    // Recalculate total price of the cart
     let totalPrice = 0
     for (const item of cart.products) {
       const itemProduct = await Product.findById(item.product)
@@ -118,7 +112,7 @@ const addProductToCart = async (req, res) => {
     await cart.save()
     return res.status(201).json(cart)
   } catch (error) {
-    console.error('Error:', error.message) // Log the error to understand the issue
+    console.error('Error:', error.message)
     return res.status(500).json({ message: error.message })
   }
 }
@@ -206,7 +200,6 @@ const removeProductFromCart = async (req, res) => {
       return res.status(404).json({ message: 'Cart not found' })
     }
 
-    // Remove product from cart
     const productIndex = cart.products.findIndex(
       (item) => item.product.toString() === productId
     )
@@ -217,7 +210,6 @@ const removeProductFromCart = async (req, res) => {
       return res.status(404).json({ message: 'Product not found in cart' })
     }
 
-    // Save updated cart
     await cart.save()
 
     return res.status(200).json({ message: 'Product removed successfully' })
@@ -246,13 +238,11 @@ const increaseProductQuantity = async (req, res) => {
     )
 
     if (productIndex > -1) {
-      // Increase the product quantity
       cart.products[productIndex].quantity += 1
     } else {
       return res.status(404).json({ message: 'Product not found in cart' })
     }
 
-    // Save updated cart
     await cart.save()
 
     return res
@@ -283,11 +273,9 @@ const decreaseProductQuantity = async (req, res) => {
     )
 
     if (productIndex > -1) {
-      // Decrease the product quantity
       if (cart.products[productIndex].quantity > 1) {
         cart.products[productIndex].quantity -= 1
       } else {
-        // Remove the product from the cart if the quantity is 1 and they decrease it
         cart.products.splice(productIndex, 1)
       }
     } else {

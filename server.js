@@ -22,11 +22,9 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors(corsOptions))
 
-// Static dosyalar
 app.use('/', express.static(path.join(__dirname, 'public')))
 app.use(express.static(path.join(__dirname, 'views')))
 
-// API rotaları
 app.use('/', require('./routes/root.js'))
 app.use('/api/users', require('./routes/userRoutes.js'))
 app.use('/api/products', require('./routes/productRoutes.js'))

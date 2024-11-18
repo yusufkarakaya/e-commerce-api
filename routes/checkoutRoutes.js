@@ -4,7 +4,6 @@ const router = express.Router()
 
 router.post('/create-checkout-session', async (req, res) => {
   const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-  console.log('Stripe Secret Key:', process.env.STRIPE_SECRET_KEY)
 
   const { items } = req.body
 
