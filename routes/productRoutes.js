@@ -5,13 +5,16 @@ const upload = require('../middleware/upload')
 
 router
   .route('/')
-  .get(productController.getAllProducts)
-  .post(upload.array('images', 10), productController.createProduct)
+  .get(productController.getAllProducts) // Fetch all products
+  .post(upload.array('images', 10), productController.createProduct) // Create a new product (with up to 10 images)
 
 router
   .route('/:id')
-  .get(productController.getProductById)
-  .patch(upload.single('imageUrl'), productController.updateProduct)
-  .delete(productController.deleteProduct)
+  .get(productController.getProductById) // Fetch product by ID
+  .patch(upload.array('images', 10), productController.updateProduct) // Update product details
+  .delete(productController.deleteProduct) // Delete a product
+
+// Route for deleting a specific product image
+router.route('/:id/images').delete(productController.deleteProductImage) // Delete a specific image from a product
 
 module.exports = router

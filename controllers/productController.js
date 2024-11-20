@@ -100,8 +100,18 @@ const updateProduct = async (req, res) => {
       category,
     }
 
-    if (req.file) {
-      updatedData.imageUrl = req.file.path // Assuming you're storing the image path in `imageUrl`
+    if (req.file && req.files.length > 0) {
+      const imageUploads = await Promise.all(
+        req.files.map((file) =>
+          cloudinary.uploader.upload(file.path, { folder: 'ecommerce' })
+        )
+      )
+
+      // Collect the secure URLs of the uploaded images
+      const newImageUrls = imageUploads.map((result) => result.secure_url)
+
+      // Append the new URLs to the existing `images` array
+      updatedData.$push = { images: { $each: newImageUrls } }
     }
 
     const product = await Product.findByIdAndUpdate(
@@ -155,10 +165,40 @@ const deleteProduct = async (req, res) => {
   }
 }
 
+const deleteProductImage = async (req, res) => {
+  const { productId, imageUrl } = req.body // Receive productId and imageUrl from the frontend
+
+  try {
+    // Find the product
+    const product = await Product.findById(productId)
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' })
+    }
+
+    // Remove the image URL from the `images` array
+    await Product.findByIdAndUpdate(
+      productId,
+      { $pull: { images: imageUrl } },
+      { new: true }
+    )
+
+    // Delete the image from Cloudinary
+    const publicId = imageUrl.split('/').slice(-1)[0].split('.')[0] // Extract the public_id
+    await cloudinary.uploader.destroy(`products/${publicId}`)
+
+    res.status(200).json({ message: 'Image deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting image:', error)
+    res.status(500).json({ error: 'Error deleting image' })
+  }
+}
+
 module.exports = {
   getAllProducts,
   getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
+  deleteProductImage,
 }

@@ -90,7 +90,6 @@ const updateOrder = async (req, res) => {
   const { id } = req.params
   const { user, products, status } = req.body
 
-  // Validation
   if (!user || !products || !products.length) {
     return res
       .status(400)
