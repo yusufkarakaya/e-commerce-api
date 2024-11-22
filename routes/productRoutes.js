@@ -15,6 +15,6 @@ router
   .delete(productController.deleteProduct) // Delete a product
 
 // Route for deleting a specific product image
-router.route('/:id/images').delete(productController.deleteProductImage) // Delete a specific image from a product
+router.route('/:productId/images').delete(productController.deleteProductImage) // Delete a specific image from a product
 
 module.exports = router

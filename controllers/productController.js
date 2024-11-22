@@ -166,31 +166,42 @@ const deleteProduct = async (req, res) => {
 }
 
 const deleteProductImage = async (req, res) => {
-  const { productId, imageUrl } = req.body // Receive productId and imageUrl from the frontend
+  const { image } = req.body
+  const { productId } = req.params
 
   try {
-    // Find the product
     const product = await Product.findById(productId)
 
     if (!product) {
+      console.log('Debug - Product not found with id:', productId)
+      console.log('Debug - Request body:', req.body)
+      console.log('Debug - Request params:', req.params)
       return res.status(404).json({ error: 'Product not found' })
     }
 
-    // Remove the image URL from the `images` array
-    await Product.findByIdAndUpdate(
-      productId,
-      { $pull: { images: imageUrl } },
-      { new: true }
-    )
+    try {
+      const updatedProduct = await Product.findByIdAndUpdate(
+        productId,
+        { $pull: { images: image } },
+        { new: true }
+      )
 
-    // Delete the image from Cloudinary
-    const publicId = imageUrl.split('/').slice(-1)[0].split('.')[0] // Extract the public_id
-    await cloudinary.uploader.destroy(`products/${publicId}`)
+      if (!updatedProduct) {
+        return res.status(404).json({ error: 'Error updating product' })
+      }
 
-    res.status(200).json({ message: 'Image deleted successfully' })
+      // Cloudinary'den silme işlemi
+      const publicId = image.split('/').slice(-1)[0].split('.')[0]
+      await cloudinary.uploader.destroy(`products/${publicId}`)
+
+      res.status(200).json({ message: 'Image deleted successfully' })
+    } catch (error) {
+      console.error('Error:', error)
+      res.status(500).json({ error: 'Error processing request' })
+    }
   } catch (error) {
-    console.error('Error deleting image:', error)
-    res.status(500).json({ error: 'Error deleting image' })
+    console.error('Error:', error)
+    res.status(500).json({ error: 'Server error' })
   }
 }
 
