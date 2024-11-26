@@ -100,17 +100,16 @@ const updateProduct = async (req, res) => {
       category,
     }
 
-    if (req.file && req.files.length > 0) {
+    if (req.files && req.files.length > 0) {
       const imageUploads = await Promise.all(
         req.files.map((file) =>
           cloudinary.uploader.upload(file.path, { folder: 'ecommerce' })
         )
       )
 
-      // Collect the secure URLs of the uploaded images
       const newImageUrls = imageUploads.map((result) => result.secure_url)
 
-      // Append the new URLs to the existing `images` array
+      // `images` dizisine yeni URL'leri ekliyoruz
       updatedData.$push = { images: { $each: newImageUrls } }
     }
 
@@ -173,9 +172,6 @@ const deleteProductImage = async (req, res) => {
     const product = await Product.findById(productId)
 
     if (!product) {
-      console.log('Debug - Product not found with id:', productId)
-      console.log('Debug - Request body:', req.body)
-      console.log('Debug - Request params:', req.params)
       return res.status(404).json({ error: 'Product not found' })
     }
 
@@ -190,7 +186,6 @@ const deleteProductImage = async (req, res) => {
         return res.status(404).json({ error: 'Error updating product' })
       }
 
-      // Cloudinary'den silme işlemi
       const publicId = image.split('/').slice(-1)[0].split('.')[0]
       await cloudinary.uploader.destroy(`products/${publicId}`)
 
