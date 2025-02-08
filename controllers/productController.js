@@ -36,47 +36,31 @@ const getProductById = async (req, res) => {
 }
 
 const createProduct = async (req, res) => {
-  const { name, price, description, stock, category: categoryId } = req.body
-
-  const images = req.files ? req.files.map((file) => file.path) : []
-
-  if (
-    !name ||
-    isNaN(Number(price)) ||
-    !description ||
-    isNaN(Number(stock)) ||
-    !categoryId ||
-    images.length === 0
-  ) {
-    return res
-      .status(400)
-      .json({ error: 'Please provide valid data for all required fields' })
-  }
-  const duplicate = await Product.findOne({ name }).lean().exec()
-  if (duplicate) {
-    return res
-      .status(400)
-      .json({ error: 'Product with this name already exists' })
-  }
-
   try {
-    let category = await Category.findById(categoryId).exec()
+    const { name, price, description, stock, category } = req.body
 
-    if (!category) {
-      return res.status(400).json({ error: 'Category not found' })
+    if (!name || !price || !description || !stock || !category) {
+      return res.status(400).json({ message: 'All fields are required' })
     }
+
+    let images = []
+    if (req.files && req.files.length > 0) {
+      images = req.files.map((file) => file.path)
+    }
+
     const product = await Product.create({
       name,
-      price,
+      price: parseFloat(price),
       description,
-      stock,
-      category: category._id,
+      stock: parseInt(stock),
+      category,
       images,
     })
 
-    return res.status(201).json(product)
+    res.status(201).json(product)
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to create product' })
+    console.error('Create product error:', error)
+    res.status(500).json({ message: 'Error creating product' })
   }
 }
 

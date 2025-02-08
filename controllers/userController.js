@@ -8,46 +8,39 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body
 
   if (!email || !password) {
-    return res.status(400).json({ message: 'Please fill all fields' })
+    return res.status(400).json({ message: 'All fields are required' })
   }
 
   try {
-    const user = await User.findOne({ email: email }).lean()
+    const user = await User.findOne({ email }).select('+password').lean()
 
     if (!user) {
-      return res.status(404).json({ message: 'Invalid credentials' })
+      return res.status(401).json({ message: 'Invalid credentials' })
     }
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' })
+      return res.status(401).json({ message: 'Invalid credentials' })
     }
 
     const accessToken = jwt.sign(
       {
-        userId: user._id,
-        username: user.username,
-        role: user.role,
-        isVerified: user.isVerified,
+        UserInfo: {
+          id: user._id,
+          role: user.role,
+        },
       },
       process.env.JWT_SECRET,
-      {
-        expiresIn: '1d',
-      }
+      { expiresIn: '1d' }
     )
-    return res.status(200).json({
-      accessToken,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        isVerified: user.isVerified,
-      },
-      message: 'Login successful',
-    })
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user
+
+    res.json({ accessToken, user: userWithoutPassword })
   } catch (error) {
-    return res.status(500).json({ error: error.message })
+    console.error('Login error:', error)
+    res.status(500).json({ message: 'Server error during login' })
   }
 }
 

@@ -1,27 +1,22 @@
 const express = require('express')
 const router = express.Router()
 const cartController = require('../controllers/cartController')
-const verifyJWT = require('../middleware/verifyJWT')
+const guestMiddleware = require('../middleware/guestMiddleware')
 
-router.route('/').get(verifyJWT, cartController.getUserCart)
-router.route('/add').post(verifyJWT, cartController.addProductToCart)
+// Get cart
+router.get('/', guestMiddleware, cartController.getUserCart)
 
-router
-  .route('/:id')
-  .get(cartController.getCartById)
-  .patch(cartController.updateCart)
+// Add product to cart
+router.post('/product', guestMiddleware, cartController.addProductToCart)
 
-router
-  .route('/product/:productId')
-  .delete(verifyJWT, cartController.removeProductFromCart)
+// Remove product from cart
+router.delete('/product/:productId', guestMiddleware, cartController.removeProductFromCart)
 
-router
-  .route('/product/:productId/increase')
-  .post(verifyJWT, cartController.increaseProductQuantity)
-router
-  .route('/product/:productId/decrease')
-  .post(verifyJWT, cartController.decreaseProductQuantity)
+// Update product quantity
+router.put('/product/:productId/increase', guestMiddleware, cartController.increaseProductQuantity)
+router.put('/product/:productId/decrease', guestMiddleware, cartController.decreaseProductQuantity)
 
-router.post('/clearCart', verifyJWT, cartController.clearCart)
+// Clear cart
+router.delete('/clear', guestMiddleware, cartController.clearCart)
 
 module.exports = router

@@ -1,11 +1,15 @@
 const mongoose = require('mongoose')
 
-const CartSchema = new mongoose.Schema(
+const cartSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      sparse: true
+    },
+    guestId: {
+      type: String,
+      sparse: true
     },
     products: [
       {
@@ -18,15 +22,29 @@ const CartSchema = new mongoose.Schema(
           type: Number,
           required: true,
           min: 1,
+          default: 1,
         },
       },
     ],
-    totalPrice: {
-      type: Number,
-      required: true,
-    },
+    lastActive: {
+      type: Date,
+      default: Date.now
+    }
   },
   { timestamps: true }
 )
 
-module.exports = mongoose.model('Cart', CartSchema)
+// Ensure either user or guestId is present
+cartSchema.pre('save', function (next) {
+  if (!this.user && !this.guestId) {
+    next(new Error('Cart must have either a user or guestId'))
+  }
+  this.lastActive = new Date()
+  next()
+})
+
+cartSchema.index({ user: 1 })
+cartSchema.index({ guestId: 1 })
+cartSchema.index({ lastActive: 1 })
+
+module.exports = mongoose.model('Cart', cartSchema)
